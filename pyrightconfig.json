@@ -1,0 +1,12 @@
+{
+    "include": ["app", "ml_models", "*.py"],
+    "exclude": ["**/node_modules", "**/__pycache__", "**/.*", "venv"],
+    "extraPaths": ["."],
+    "pythonVersion": "3.13",
+    "typeCheckingMode": "off",
+    "reportMissingImports": false,
+    "reportMissingModuleSource": false,
+    "reportOptionalMemberAccess": false,
+    "reportGeneralTypeIssues": false,
+    "reportUnusedImport": false
+}

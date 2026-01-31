@@ -1,0 +1,37 @@
+# SecureBank Backend Requirements
+# Web Framework
+flask>=3.0.0
+flask-cors>=4.0.0
+flask-socketio>=5.3.0
+python-socketio>=5.10.0
+eventlet>=0.34.0
+gunicorn>=21.0.0
+
+# Machine Learning
+pandas>=2.2.0
+numpy>=2.0.0
+scikit-learn>=1.4.0
+joblib>=1.3.0
+imbalanced-learn>=0.12.0
+xgboost>=2.0.0
+
+# Blockchain & Cryptography
+pycryptodome>=3.19.0
+qrcode[pil]>=7.4.0
+pillow>=10.0.0
+
+# Database
+sqlalchemy>=2.0.0
+flask-sqlalchemy>=3.1.0
+alembic>=1.12.0
+
+# Real-time & WebSocket
+python-engineio>=4.8.0
+gevent>=23.9.0
+gevent-websocket>=0.10.0
+
+# Utilities
+python-dotenv>=1.0.0
+python-dateutil>=2.8.0
+bcrypt>=4.1.0
+pyjwt>=2.8.0
