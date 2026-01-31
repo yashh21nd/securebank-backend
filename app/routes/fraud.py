@@ -168,3 +168,51 @@ def get_fraud_statistics(current_user):
             'blocked_transactions': blocked_count
         }
     }), 200
+# Add these demo/public endpoints at the end of fraud.py
+
+@fraud_bp.route('/analyze', methods=['POST'])
+def analyze_transaction_public():
+    """Public endpoint for fraud analysis (demo mode)"""
+    data = request.get_json()
+    fraud_service = get_fraud_service()
+
+    transaction_data = {
+        'type': data.get('transaction_type', 'TRANSFER').upper(),
+        'amount': float(data.get('amount', 0)),
+        'oldbalanceOrg': float(data.get('sender_balance', 10000)),
+        'newbalanceOrig': float(data.get('sender_balance', 10000)) - float(data.get('amount', 0)),
+        'oldbalanceDest': float(data.get('recipient_balance', 5000)),
+        'newbalanceDest': float(data.get('recipient_balance', 5000)) + float(data.get('amount', 0)),
+        'step': data.get('hour', 12)
+    }
+
+    result = fraud_service.predict_fraud(transaction_data)
+
+    return jsonify({
+        'status': 'success',
+        'is_fraudulent': result.get('is_fraud', False),
+        'fraud_probability': result.get('fraud_probability', 0),
+        'risk_score': result.get('fraud_probability', 0) * 100,
+        'risk_level': 'critical' if result.get('fraud_probability', 0) > 0.7 else 'high' if result.get('fraud_probability', 0) > 0.5 else 'medium' if result.get('fraud_probability', 0) > 0.3 else 'low',
+        'should_block': result.get('should_block', False),
+        'should_flag': result.get('should_flag', False),
+        'recommendation': result.get('recommendation', 'Transaction appears safe'),
+        'analysis': {
+            'amount_risk': 'High' if float(data.get('amount', 0)) > 50000 else 'Normal',
+            'pattern_risk': 'Normal'
+        }
+    }), 200
+
+
+@fraud_bp.route('/health', methods=['GET'])
+def fraud_health():
+    """Public health check for fraud service"""
+    fraud_service = get_fraud_service()
+    model_info = fraud_service.get_model_info()
+    
+    return jsonify({
+        'status': 'healthy',
+        'model_loaded': model_info.get('model_loaded', False),
+        'model_type': model_info.get('model_type', 'RandomForest'),
+        'features': model_info.get('n_features', 21)
+    }), 200
