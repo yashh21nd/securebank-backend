@@ -22,11 +22,21 @@ def create_app(config_name='development'):
 
     # Configure CORS with full support
     CORS(app,
-         resources={r"/api/*": {"origins": "*"}},
+         resources={r"/*": {"origins": ["https://securebank-frontend.vercel.app", "http://localhost:5173", "http://localhost:3000", "*"]}},
          supports_credentials=True,
-         allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
-         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+         allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
+         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
          expose_headers=["Content-Type", "Authorization"])
+    
+    # Add CORS headers to all responses
+    @app.after_request
+    def after_request(response):
+        origin = response.headers.get('Origin', '*')
+        response.headers.add('Access-Control-Allow-Origin', origin if origin else '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With,Accept,Origin')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
 
     socketio.init_app(app)
 
