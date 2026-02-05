@@ -1,4 +1,4 @@
-"""
+﻿"""
 SecureBank Backend Application Factory
 """
 from flask import Flask, jsonify
@@ -19,15 +19,15 @@ def create_app(config_name='development'):
 
     # Initialize extensions with app
     db.init_app(app)
-    
+
     # Configure CORS with full support
-    CORS(app, 
+    CORS(app,
          resources={r"/api/*": {"origins": "*"}},
          supports_credentials=True,
          allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
          expose_headers=["Content-Type", "Authorization"])
-    
+
     socketio.init_app(app)
 
     # Health check endpoint
@@ -47,6 +47,7 @@ def create_app(config_name='development'):
     from app.routes.fraud import fraud_bp
     from app.routes.speech import speech_bp
     from app.routes.users import users_bp
+    from app.routes.pin import pin_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(transactions_bp, url_prefix='/api/transactions')
@@ -55,6 +56,7 @@ def create_app(config_name='development'):
     app.register_blueprint(fraud_bp, url_prefix='/api/fraud')
     app.register_blueprint(speech_bp, url_prefix='/api/speech')
     app.register_blueprint(users_bp, url_prefix='/api/users')
+    app.register_blueprint(pin_bp, url_prefix='/api/pin')
 
     # Create database tables
     with app.app_context():
