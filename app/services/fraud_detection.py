@@ -3,6 +3,7 @@ Fraud Detection Service
 Real-time fraud detection using trained ML model
 """
 import numpy as np
+import pandas as pd
 import joblib
 import os
 from datetime import datetime
@@ -100,8 +101,17 @@ class FraudDetectionService:
         is_cash_out = 1 if tx_type == 'CASH_OUT' else 0
         is_high_amount = 1 if amount > 200000 else 0  # Threshold for high amount
         
-        # Create feature array in correct order
-        features = np.array([
+        # Feature names matching the trained model
+        feature_names = [
+            'step', 'type_encoded', 'amount', 'oldbalanceOrg', 'newbalanceOrig',
+            'oldbalanceDest', 'newbalanceDest', 'orig_balance_diff', 'dest_balance_diff',
+            'orig_balance_ratio', 'dest_balance_ratio', 'orig_error_balance',
+            'dest_error_balance', 'is_orig_emptied', 'amount_to_orig_balance',
+            'is_transfer', 'is_cash_out', 'is_high_amount'
+        ]
+        
+        # Create feature values
+        feature_values = [
             step,
             type_encoded,
             amount,
@@ -120,12 +130,15 @@ class FraudDetectionService:
             is_transfer,
             is_cash_out,
             is_high_amount
-        ]).reshape(1, -1)
+        ]
+        
+        # Create DataFrame with proper feature names to avoid sklearn warning
+        features_df = pd.DataFrame([feature_values], columns=feature_names)
         
         # Handle infinite values
-        features = np.nan_to_num(features, nan=0, posinf=0, neginf=0)
+        features_df = features_df.replace([np.inf, -np.inf], 0).fillna(0)
         
-        return features
+        return features_df
     
     def predict_fraud(self, transaction_data):
         """
