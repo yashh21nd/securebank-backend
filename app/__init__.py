@@ -31,11 +31,20 @@ def create_app(config_name='development'):
     # Add CORS headers to all responses
     @app.after_request
     def after_request(response):
-        origin = response.headers.get('Origin', '*')
-        response.headers.add('Access-Control-Allow-Origin', origin if origin else '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With,Accept,Origin')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH')
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        from flask import request as flask_request
+        origin = flask_request.headers.get('Origin', '*')
+        
+        # Remove existing CORS headers to avoid duplicates
+        response.headers.pop('Access-Control-Allow-Origin', None)
+        response.headers.pop('Access-Control-Allow-Headers', None)
+        response.headers.pop('Access-Control-Allow-Methods', None)
+        response.headers.pop('Access-Control-Allow-Credentials', None)
+        
+        # Set CORS headers
+        response.headers['Access-Control-Allow-Origin'] = origin if origin else '*'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization,X-Requested-With,Accept,Origin'
+        response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS,PATCH'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
         return response
 
     socketio.init_app(app)
