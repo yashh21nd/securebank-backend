@@ -268,3 +268,97 @@ def fraud_health():
         })
         response.headers['Access-Control-Allow-Origin'] = '*'
         return response, 200
+
+
+@fraud_bp.route('/dataset/stats', methods=['GET', 'OPTIONS'])
+@cross_origin(origins='*')
+def get_dataset_stats():
+    """Get statistics about the fraud detection dataset"""
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        return response, 204
+    
+    try:
+        # Return mock dataset statistics (PaySim dataset info)
+        response = jsonify({
+            'status': 'success',
+            'dataset': {
+                'name': 'PaySim Synthetic Financial Dataset',
+                'total_transactions': 6362620,
+                'fraud_transactions': 8213,
+                'fraud_percentage': 0.129,
+                'transaction_types': ['PAYMENT', 'TRANSFER', 'CASH_OUT', 'CASH_IN', 'DEBIT'],
+                'features': 18,
+                'time_steps': 743
+            },
+            'model': {
+                'type': 'XGBoost Classifier',
+                'accuracy': 0.9987,
+                'precision': 0.9823,
+                'recall': 0.9156,
+                'f1_score': 0.9478,
+                'auc_roc': 0.9912
+            }
+        })
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response, 200
+    except Exception as e:
+        response = jsonify({
+            'status': 'error',
+            'error': str(e)
+        })
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response, 200
+
+
+@fraud_bp.route('/contact/profile', methods=['GET', 'POST', 'OPTIONS'])
+@cross_origin(origins='*')
+def get_contact_fraud_profile():
+    """Get fraud risk profile for a contact"""
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        return response, 204
+    
+    try:
+        data = request.get_json() or {}
+        contact_id = data.get('contact_id') or request.args.get('contact_id', 'unknown')
+        
+        # Return mock contact fraud profile
+        import random
+        risk_score = random.uniform(0.05, 0.35)  # Most contacts are low risk
+        
+        response = jsonify({
+            'status': 'success',
+            'contact_id': contact_id,
+            'risk_profile': {
+                'risk_score': round(risk_score, 3),
+                'risk_level': 'low' if risk_score < 0.3 else 'medium' if risk_score < 0.6 else 'high',
+                'trust_score': round(1 - risk_score, 3),
+                'transaction_count': random.randint(5, 50),
+                'successful_transactions': random.randint(5, 45),
+                'flagged_transactions': random.randint(0, 2),
+                'account_age_days': random.randint(30, 730),
+                'verification_status': 'verified',
+                'last_transaction': '2026-02-05T14:30:00Z'
+            }
+        })
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response, 200
+    except Exception as e:
+        response = jsonify({
+            'status': 'error',
+            'error': str(e),
+            'risk_profile': {
+                'risk_score': 0.1,
+                'risk_level': 'low',
+                'trust_score': 0.9
+            }
+        })
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response, 200
