@@ -66,6 +66,18 @@ def create_app(config_name='development'):
 
     socketio.init_app(app)
 
+    # Global error handler with CORS
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        response = jsonify({
+            'error': str(e),
+            'status': 'error'
+        })
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, PATCH'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response, 500
+
     # Health check endpoint
     @app.route('/api/health')
     def health_check():

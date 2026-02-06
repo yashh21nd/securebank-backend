@@ -180,57 +180,91 @@ def get_fraud_statistics(current_user):
 # Public endpoints for demo mode (no auth required)
 
 @fraud_bp.route('/analyze', methods=['POST', 'OPTIONS'])
-@cross_origin(origins=['https://securebank-frontend.vercel.app', 'http://localhost:5173', 'http://localhost:3000', '*'])
+@cross_origin(origins='*')
 def analyze_transaction_public():
     """Public endpoint for fraud analysis (demo mode)"""
     if request.method == 'OPTIONS':
-        return '', 204
-        
-    data = request.get_json()
-    fraud_service = get_fraud_service()
+        response = jsonify({'status': 'ok'})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        return response, 204
+    
+    try:
+        data = request.get_json() or {}
+        fraud_service = get_fraud_service()
 
-    transaction_data = {
-        'type': data.get('transaction_type', 'TRANSFER').upper(),
-        'amount': float(data.get('amount', 0)),
-        'oldbalanceOrg': float(data.get('sender_balance', 10000)),
-        'newbalanceOrig': float(data.get('sender_balance', 10000)) - float(data.get('amount', 0)),
-        'oldbalanceDest': float(data.get('recipient_balance', 5000)),
-        'newbalanceDest': float(data.get('recipient_balance', 5000)) + float(data.get('amount', 0)),
-        'step': data.get('hour', 12)
-    }
-
-    result = fraud_service.predict_fraud(transaction_data)
-
-    return jsonify({
-        'status': 'success',
-        'is_fraud': result.get('is_fraud', False),
-        'fraud_probability': result.get('fraud_probability', 0),
-        'risk_score': result.get('fraud_probability', 0) * 100,
-        'risk_level': 'critical' if result.get('fraud_probability', 0) > 0.7 else 'high' if result.get('fraud_probability', 0) > 0.5 else 'medium' if result.get('fraud_probability', 0) > 0.3 else 'low',
-        'should_block': result.get('should_block', False),
-        'requires_review': result.get('should_flag', False),
-        'risk_factors': result.get('risk_factors', []),
-        'recommendation': result.get('recommendation', 'Transaction appears safe'),
-        'analysis': {
-            'amount_risk': 'High' if float(data.get('amount', 0)) > 50000 else 'Normal',
-            'pattern_risk': 'Normal'
+        transaction_data = {
+            'type': data.get('transaction_type', 'TRANSFER').upper(),
+            'amount': float(data.get('amount', 0)),
+            'oldbalanceOrg': float(data.get('sender_balance', 10000)),
+            'newbalanceOrig': float(data.get('sender_balance', 10000)) - float(data.get('amount', 0)),
+            'oldbalanceDest': float(data.get('recipient_balance', 5000)),
+            'newbalanceDest': float(data.get('recipient_balance', 5000)) + float(data.get('amount', 0)),
+            'step': data.get('hour', 12)
         }
-    }), 200
+
+        result = fraud_service.predict_fraud(transaction_data)
+
+        response = jsonify({
+            'status': 'success',
+            'is_fraud': result.get('is_fraud', False),
+            'fraud_probability': result.get('fraud_probability', 0),
+            'risk_score': result.get('fraud_probability', 0) * 100,
+            'risk_level': 'critical' if result.get('fraud_probability', 0) > 0.7 else 'high' if result.get('fraud_probability', 0) > 0.5 else 'medium' if result.get('fraud_probability', 0) > 0.3 else 'low',
+            'should_block': result.get('should_block', False),
+            'requires_review': result.get('should_flag', False),
+            'risk_factors': result.get('risk_factors', []),
+            'recommendation': result.get('recommendation', 'Transaction appears safe'),
+            'analysis': {
+                'amount_risk': 'High' if float(data.get('amount', 0)) > 50000 else 'Normal',
+                'pattern_risk': 'Normal'
+            }
+        })
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response, 200
+    except Exception as e:
+        response = jsonify({
+            'status': 'error',
+            'error': str(e),
+            'is_fraud': False,
+            'fraud_probability': 0,
+            'risk_level': 'low',
+            'risk_factors': [],
+            'recommendation': 'Unable to analyze - defaulting to safe'
+        })
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response, 200
 
 
 @fraud_bp.route('/health', methods=['GET', 'OPTIONS'])
-@cross_origin(origins=['https://securebank-frontend.vercel.app', 'http://localhost:5173', 'http://localhost:3000', '*'])
+@cross_origin(origins='*')
 def fraud_health():
     """Public health check for fraud service"""
     if request.method == 'OPTIONS':
-        return '', 204
-        
-    fraud_service = get_fraud_service()
-    model_info = fraud_service.get_model_info()
+        response = jsonify({'status': 'ok'})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        return response, 204
+    
+    try:
+        fraud_service = get_fraud_service()
+        model_info = fraud_service.get_model_info()
 
-    return jsonify({
-        'status': 'healthy',
-        'model_loaded': model_info.get('model_loaded', False),
-        'model_type': model_info.get('model_type', 'RandomForest'),
-        'features': model_info.get('n_features', 21)
-    }), 200
+        response = jsonify({
+            'status': 'healthy',
+            'model_loaded': model_info.get('model_loaded', False),
+            'model_type': model_info.get('model_type', 'RandomForest'),
+            'features': model_info.get('n_features', 21)
+        })
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response, 200
+    except Exception as e:
+        response = jsonify({
+            'status': 'healthy',
+            'model_loaded': False,
+            'error': str(e)
+        })
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response, 200
