@@ -9,7 +9,7 @@ from config import config
 
 # Initialize extensions
 db = SQLAlchemy()
-socketio = SocketIO(cors_allowed_origins="*", async_mode='eventlet')
+socketio = SocketIO(cors_allowed_origins="*", async_mode='gevent')
 
 
 def create_app(config_name='development'):
